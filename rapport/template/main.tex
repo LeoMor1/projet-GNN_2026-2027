@@ -1,0 +1,176 @@
+\documentclass[french]{cls/llncs}
+
+\usepackage[english, french]{babel}
+\usepackage[utf8]{inputenc}
+
+\usepackage{graphicx}
+
+\usepackage{listings}
+\usepackage{subfig}
+\usepackage{hyperref}
+
+%-----------------------------------------
+\title{Titre de l'étude}
+
+%\subtitle{\vspace{.5cm}Rapport de Master}
+
+\author{ Prénom \textsc{Nom} \\
+         Prénom \textsc{Nom} }
+
+\institute{Université Claude Bernard Lyon 1, France}
+
+\lstset{ 
+    basicstyle=\small,
+    captionpos=b  % sets the caption-position to bottom
+}
+
+\providecommand{\motcles}[1]{\textbf{Mots-clés:} #1}
+
+\pagestyle{headings} 
+%-----------------------------------------
+
+\begin{document}
+
+    \renewcommand{\thelstlisting}{\arabic{lstlisting}}
+
+    \maketitle   
+    
+    \selectlanguage{english}
+    \begin{abstract}
+        Abstract in english.
+        
+         \begin{keywords}
+        keywords
+    \end{keywords}
+    \end{abstract}
+
+
+   
+
+%-----------------------------------------
+
+    \section{Introduction} \label{intro}
+
+Pour produire votre rapport de projet en \LaTeX\, vous devez utiliser la
+classe \textit{llncs.cls}. \\
+        
+        Toutes les instructions détaillées concernant l'utilisation de la classe \textit{llncs.cls}, ainsi que les templates \LaTeX. et \texttt{Word}, sont téléchargeables sur la page suivante:\\ \url{https://www.springer.com/gp/computer-science/lncs/conference-proceedings-guidelines}.\\
+        
+     Le rapport de projet doit faire maximum 4 pages (hors refs). Vous pouvez l'écrire en Français ou en Anglais mais l'abstract doit être en Anglais.
+      
+      
+    \section{Section de niveau 1} \label{sect:niveau11}
+
+Exemple de section de niveau 1.  Voici un premier paragraphe. Voici
+un premier paragraphe, Voici un premier paragraphe, Voici un premier
+paragraphe, Voici un premier paragraphe, Voici un premier
+paragraphe, Voici un premier paragraphe, Voici un premier
+paragraphe, Voici un premier paragraphe, Voici un premier
+paragraphe.
+
+       
+
+        \subsection{Section de niveau 2} \label{sect:niveau2}
+
+           Exemple de section de niveau 2.
+
+      \subsubsection{Section de niveau 3} \label{sect:niveau3}
+
+  Exemple de section de niveau 3.\\
+  
+ \noindent Vous pouvez aussi utiliser 
+\verb+\paragraph{+\textit{Titre du paragraphe.}\verb+}+ qui produit
+
+\paragraph{Titre du paragraphe.} Ceci est un exemple de section type
+paragraphe. On note l'absence de numérotation.
+  
+       \subsection{Liste d'éléments}
+         
+      Exemple de liste sans numérotation :
+\begin{itemize}
+    \item premier item ;
+    \item deuxième item ;
+    \begin{itemize}
+      \item premier sous-item,
+      \item second sous-item,
+      \item dernier sous-item.
+  \end{itemize}
+  \item dernier item.
+\end{itemize}
+
+Autre liste possible avec numérotation :
+\begin{enumerate}
+    \item premier item ;
+    \item deuxième item ;
+    \begin{enumerate}
+      \item premier sous-item,
+      \item second sous-item,
+      \item dernier sous-item.
+    \end{enumerate}
+  \item dernier item.
+\end{enumerate}
+
+\subsection{Tables, Figures}
+
+
+Les tableaux et figures doivent être centrés horizontalement. Les
+légendes sont placées sous ces mêmes éléments et sont centrées si
+elle font moins d'une ligne et justifiées sinon. Voir le
+tableau~\ref{tab_exemple} et la figure~\ref{fig_exemple} pour des
+exemples. Les légendes doivent se terminer avec un point.
+
+\begin{table}[ht]
+ \begin{center}
+   \begin{tabular}{l | c c }
+   \hline
+                & modèle 1 & modèle 2 \\
+   \hline
+   indicateur 1 & 1        & 2        \\
+   indicateur 2 & 2        & 1        \\
+   indicateur 3 & 1        & 1        \\
+   \hline
+   \end{tabular}
+\caption{Exemple de tableau avec sa légende.} \label{tab_exemple}
+ \end{center}
+\end{table}
+
+
+\begin{figure}[t]
+\begin{center}
+ 	\includegraphics[width=0.5\linewidth]{figures/logoucbl.png}
+ \caption{Exemple de figure avec sa légende. La légende est centrée,
+sauf si, comme ici, elle fait plus d'une ligne, auquel cas elle est
+justifiée.} \label{fig_exemple}
+\end{center}
+\end{figure}
+
+   
+
+       \subsection{Equation} \label{sect2:eq}
+
+Pour inclure une équation, vous pouvez utiliser l'environnement \texttt{equation} commue pour l'exemple ci-dessous: 
+\begin{equation}
+\left(\frac{a^{2} + b^{2}}{c^{3}} \right) = 1 \quad
+\mbox{ if } c\neq 0 \mbox{ and if } a,b,c\in \bbbr \enspace .
+\end{equation}
+           
+           \subsection{Notes de bas de pages}
+
+Le texte de la note apparaît en bas de la page.\footnote{Exemple de
+note de bas de page.}
+
+
+    \section{Consignes pour les références} \label{sect3}
+
+Les références sont données en fin de rapport.
+
+Nous vous recommandons l'utilisation de
+\textsc{Bib}\TeX\ avec le style bibliographique \textit{splncs03.bst}. Par exemple pour ce document, nous utilisons le fichier \texttt{bibM2.bib}, dans lequel est présent la référence \cite{Russell2003}. 
+     
+Dans le corps du texte, on utilise la commande \texttt{$\backslash$ cite} pour faire référence à un article.  
+
+    \newpage
+    \bibliographystyle{cls/splncs03} 
+    \bibliography{bib/bibM2.bib}        
+
+\end{document}

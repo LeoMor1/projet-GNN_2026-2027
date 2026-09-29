@@ -1,0 +1,12 @@
+[project]
+name = "projet-gnn-2026-2027"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "matplotlib>=3.11.2",
+    "networkx>=3.7",
+    "scikit-learn>=1.9.1",
+    "seaborn>=0.13.2",
+    "torch>=2.14.0",
+    "torch-geometric>=2.8.0.post1",
+]
