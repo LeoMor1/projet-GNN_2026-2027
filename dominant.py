@@ -14,3 +14,14 @@ class Encoder(nn.Module):
         h = F.relu(self.conv2(h, edge_index))
         z = self.conv3(x, edge_index)
         return z
+
+class AttributeDecoder(nn.Module):
+    def __init__(self, embed_dim, out_dim):
+        super().__init__()
+        self.conv = GCNConv(embed_dim, out_dim)
+
+    def forward(self, z, edge_index):
+        return F.relu(self.conv(z, edge_index))
+
+def structure_decoder(z):
+    return z @ z.t()
