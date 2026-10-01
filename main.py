@@ -5,6 +5,7 @@ Basé sur le TP-GNN (Getting started, avant le GCN).
 
 from pathlib import Path
 
+
 import matplotlib.pyplot as plt
 import networkx as nx
 import torch as th
