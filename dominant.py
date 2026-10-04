@@ -8,7 +8,7 @@ from torch_geometric.utils import from_networkx, to_undirected
 from sklearn.preprocessing import LabelEncoder
 
 class Encoder(nn.Module):
-    def __init__(self, in_dim, l1=32, l2=16, out=8):
+    def __init__(self, in_dim, l1=64, l2=32, out=16):
         super().__init__()
         self.conv1 = GCNConv(in_dim, l1)
         self.conv2 = GCNConv(l1, l2)
@@ -35,7 +35,7 @@ class Dominant(nn.Module):
     def __init__(self, in_dim):
         super().__init__()
         self.encoder = Encoder(in_dim)
-        self.attr_decoder = AttributeDecoder(embed_dim=8, out_dim=in_dim)
+        self.attr_decoder = AttributeDecoder(embed_dim=16, out_dim=in_dim)
 
     def forward(self, x, edge_index):
         z = self.encoder(x, edge_index)
