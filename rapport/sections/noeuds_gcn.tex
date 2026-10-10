@@ -1,0 +1,115 @@
+\section{Anomalies de nœuds : GCN (étudiant 2)}
+\label{sec:gcn}
+
+\subsection{Protocole et modèle}
+
+Nous cherchons des \emph{nœuds} anormaux : des aéroports dont les attributs ou les
+liaisons s'écartent de ceux de leurs voisins. Sans étiquette << nœud faux >>, nous
+entraînons DOMINANT~\cite{ding2019dominant} par reconstruction, sans étiquette, sur le
+graphe complet : un nœud est d'autant plus suspect qu'il est mal reconstruit.
+
+Les entrées sont $F=7$ attributs standardisés : la position sur la sphère unité
+$(x,y,z)$, $\log(1+\text{pop})$
+avec un indicateur de population manquante (valeur par défaut $10\,000$), et
+$\log(1+d)$ pour les distances moyenne et minimale, en km, aux voisins du graphe. 
+L'encodeur a trois couches GCN ($7\to64\to32\to16$) avec ReLU et dropout
+$0{,}2$, le décodeur d'attributs deux couches ($16\to32\to7$), le décodeur
+structurel une couche ($16\to16$) puis $\sigma(\tilde Z\tilde Z^\top)$. La perte
+est $\mathcal{L}_{\mathrm{struct}}+\mathcal{L}_{\mathrm{attr}}$ : entropie croisée
+sur toutes les paires et erreur quadratique sur $X$. 
+Le score d'un nœud somme ses deux erreurs de reconstruction,
+\[
+s_i=\tfrac1F\lVert x_i-\hat x_i\rVert^2+\tfrac1N\textstyle\sum_{j}\ell_w\!\big(a_{ij},
+\sigma(\tilde z_i^\top\tilde z_j)\big),
+\]
+recentré par la médiane et divisé par le MAD.
+Adam ($0{,}005$, 500 époques), 5 entraînements indépendants dont les scores sont moyennés.
+
+\subsection{Résultats}
+
+L'erreur d'attributs passe de $0{,}9997$ à
+$0{,}38$--$0{,}39$ en 500 époques, la structure de $1{,}10$ -- $1{,}31$ à
+$0{,}79$--$0{,}80$ ; les cinq entraînements convergent à moins de $0{,}01$
+
+\begin{table}[h]
+\centering
+\footnotesize
+\caption{Dix nœuds les mieux classés (moyenne de 5 entraînements). Position :
+(lat\,,\,lon) du fichier, feature la plus mal reconstruite, rapport $r_{if}$ à
+l'erreur moyenne.}
+\label{tab:nodes}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}rllll@{}}
+\toprule
+Rang & Nœud & Position & Voisins & Feature \\
+\midrule
+1 & St Thomas Island & $(-24{,}1;\,134{,}4)$ & Caraïbes & $d_{\min}$ $\times36{,}3$ \\
+2 & Hasvik & $(-43{,}9;\,169{,}1)$ & Norvège & $z$ $\times53{,}4$ \\
+3 & Cagliari & $(-32{,}3;\,125{,}5)$ & Italie & $z$ $\times35{,}6$ \\
+4 & Ottawa & $(-27{,}9;\,144{,}6)$ & Canada & $z$ $\times42{,}5$ \\
+5 & Jersey & $(-35{,}4;\,145{,}7)$ & R.-U., France & $z$ $\times44{,}2$ \\
+6 & Wewak & $(49{,}0;\,-122{,}8)$ & Papouasie-N.-G. & $d_{\min}$ $\times27{,}3$ \\
+7 & Frankfurt & $(50{,}0;\,8{,}6)$ & monde entier & $\log$ pop $\times27{,}2$ \\
+8 & Sara & $(58{,}2;\,-135{,}3)$ & Vanuatu & $d_{\min}$ $\times28{,}5$ \\
+9 & Budapest & $(-24{,}9;\,152{,}3)$ & Europe & $z$ $\times40{,}7$ \\
+10 & Casablanca & $(-28{,}9;\,153{,}1)$ & Maroc & $x$ $\times54{,}7$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Neuf des dix nœuds sont mal géolocalisés (tableau~\ref{tab:nodes}) : leurs coordonnées
+contredisent leur nom et leurs voisins (Hasvik en Norvège placé en Nouvelle-Zélande,
+St Thomas aux Caraïbes placé en Australie, Wewak en Papouasie placé au Canada). Les
+features les plus mal reconstruites sont positionnelles ($r_{if}$ de 27 à 55), la
+population reste proche de la moyenne. Frankfurt fait exception : coordonnées
+correctes, mais population par défaut $10\,000$ bien en dessous de sa connectivité
+($\log$ pop $\times27{,}2$), une erreur de donnée, pas de position. Les liens ne
+sont pas en cause : pour les dix nœuds, le lien existant le moins plausible garde une
+probabilité $\ge0{,}71$. Pour les nœuds mal placés, les liens absents les plus
+attendus (p $>0{,}99$) vont vers les hubs de leur région réelle (Atlanta, Dallas,
+Denver pour Ottawa) : l'embedding retrouve la région d'un nœud à partir de ses
+voisins malgré ses coordonnées. Ottawa relie aussi cette analyse à la
+section~\ref{sec:liens} : le VGAE y classait haut le lien Ottawa--Iqaluit alors que
+ce sont les attributs du nœud qui sont faux.
+
+\subsection{Évaluation et ablation}
+
+Nous évaluons par injection : pour $r\in\{1,5,10,20\}\,\%$,
+sur $\lceil rN\rceil$ nœuds tirés au hasard, puis AUC et
+précision moyenne (AP) sur la séparation corrompus/reste, moyennées sur 5
+entraînements. L'AP aléatoire vaut $r$.
+
+\begin{table}[ht]
+ \begin{center}
+   \footnotesize
+   \setlength{\tabcolsep}{3pt}
+   \resizebox{\textwidth}{!}{%
+   \begin{tabular}{@{}lcccccccc@{}}
+   \toprule
+   & \multicolumn{2}{c}{$r=1\,\%$} & \multicolumn{2}{c}{$r=5\,\%$} & \multicolumn{2}{c}{$r=10\,\%$} & \multicolumn{2}{c}{$r=20\,\%$} \\
+   \cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}\cmidrule(lr){8-9}
+   Modèle & AUC & AP & AUC & AP & AUC & AP & AUC & AP \\
+   \midrule
+   Complet & $\mathbf{0{,}954}(12)$ & $\mathbf{0{,}197}(41)$ & $\mathbf{0{,}933}(6)$ & $\mathbf{0{,}433}(25)$ & $\mathbf{0{,}912}(5)$ & $\mathbf{0{,}537}(17)$ & $\mathbf{0{,}866}(7)$ & $\mathbf{0{,}612}(16)$ \\
+   Ablation & $0{,}484(33)$ & $0{,}011(1)$ & $0{,}485(24)$ & $0{,}049(4)$ & $0{,}489(19)$ & $0{,}097(7)$ & $0{,}489(9)$ & $0{,}194(6)$ \\
+   \bottomrule
+   \end{tabular}%
+   }
+ \caption{Nœuds injectés : moyenne sur 5 entraînements, l'écart-type entre
+parenthèses porte sur le dernier chiffre ($0{,}954(12)=0{,}954\pm0{,}012$).
+Une AP aléatoire vaut $r$.} \label{tab:nodeauc}
+ \end{center}
+\end{table}
+
+La performance décroît avec $r$ : les nœuds corrompus participant à
+l'entraînement, le modèle apprend partiellement à les
+reconstruire (l'erreur d'attributs finale monte de $0{,}39$ à $0{,}50$ entre $r=0$
+et $20\,\%$). L'AP est la métrique pertinente : avec des anomalies rares, l'AUC est
+dominée par la masse des vrais négatifs.
+
+Sans prétraitement (lat/lon/pop brutes), la méthode tombe au niveau du hasard à tous
+les taux : AUC $\approx0{,}49$, AP $\approx r$. Dominée par la population brute
+(erreurs quadratiques $\sim10^{14}$), la perte stagne à $3\times10^{11}$ et le
+modèle n'apprend aucune régularité positionnelle, son classement ne reflète que la
+taille des villes. La détection repose donc sur la conception des attributs et non sur 
+l'architecture seule.
