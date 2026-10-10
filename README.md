@@ -1,4 +1,4 @@
-# Projet GNN 2026-2027 : anomalies de liens dans un réseau d'aéroports
+# Projet GNN 2026-2027 : Détection d’anomalies liens/noeuds dans un réseau d’aéroports avec des GNN
 
 Les autoencodeurs de graphe (GAE, VGAE) repèrent-ils les liens aberrants d'un réseau d'aéroports, mieux qu'une heuristique sans apprentissage ? Ce dépôt contient le volet « liens » du projet de groupe. Le rapport est dans `rapport/`.
 
@@ -54,7 +54,3 @@ rapport/      main.tex + sections/ (un fichier par partie), bibM2.bib, template 
 cd rapport
 pdflatex main && bibtex main && pdflatex main && pdflatex main
 ```
-
-## Usage d'IA générative
-
-ChatGPT et Cursor ont servi à comprendre les API de PyTorch Geometric (`GAE`, `VGAE`, `RandomLinkSplit`), à structurer les expériences (découpage, graines, anomalies injectées, CSV) et à déboguer l'import de `sklearn.metrics` sous Windows. Claude (Anthropic) a servi à relire le dépôt et le rapport, à écrire `run_baselines.py`, à nettoyer le code et à rédiger un premier jet de la partie liens du rapport.
