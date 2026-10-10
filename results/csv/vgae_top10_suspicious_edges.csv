@@ -1,0 +1,11 @@
+rank,source,target,source_city,source_country,target_city,target_country,reconstruction_probability,anomaly_score
+1,167,1571,Pittsburgh,USA,Latrobe,USA,0.283199,0.716801
+2,36,66,Hong Kong,CHINA,Chicago,USA,0.392426,0.607574
+3,44,127,Nagoya,JAPAN,Detroit,USA,0.400355,0.599645
+4,107,1104,Anchorage,USA,Cordova,USA,0.422565,0.577435
+5,737,2374,Ottawa,AUSTRALIA,Iqaluit,CANADA,0.446150,0.553850
+6,163,869,Orlando,USA,Reykjavik,ICELAND,0.455467,0.544533
+7,856,2436,Lisbon,PORTUGAL,Horta,PORTUGAL,0.477658,0.522342
+8,52,114,Seoul,SOUTH_KOREA,Boston,USA,0.490362,0.509638
+9,1341,1520,Nantes,FRANCE,Fort de France,MARTINIQUE,0.497533,0.502467
+10,289,1014,Phuket,THAILAND,Antalya,TURKEY,0.507845,0.492155

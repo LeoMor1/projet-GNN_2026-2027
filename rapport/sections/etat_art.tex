@@ -1,0 +1,7 @@
+\section{État de l'art}
+\label{sec:sota}
+
+\paragraph{Liens.}
+Pour juger un lien, on peut comparer les voisinages de ses extrémités : voisins communs, Jaccard, ou Adamic--Adar~\cite{adamic2003friends}, qui pondère chaque voisin commun par $1/\log(\deg)$. Ces scores restent des références en prédiction de liens~\cite{liben2007link} et n'utilisent ni attributs ni apprentissage. Le GAE et le VGAE~\cite{kipf2016vgae} associent un encodeur GCN~\cite{kipf2017gcn} à un décodeur $p_{ij}=\sigma(z_i^\top z_j)$ ; le VGAE rend $z_i$ aléatoire et ajoute un terme KL. SEAL~\cite{zhang2018seal} apprend sur le sous-graphe autour de chaque paire. Pour les graphes attribués, DOMINANT~\cite{ding2019dominant} reconstruit structure et attributs avec un autoencodeur GCN (revue : \cite{ma2023survey}). Nos baselines pour les liens sont Jaccard, Adamic--Adar et la distance entre aéroports, comparées au GAE et au VGAE.
+
+\espace{Étudiants 2 et 3 : état de l'art nœuds (GCN, GAT, baselines de comparaison), 5--6 lignes}{1.7cm}
