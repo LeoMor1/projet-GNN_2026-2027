@@ -1,0 +1,2 @@
+$pdflatex = 'pdflatex -interaction=nonstopmode %O %S';
+$bibtex_use = 2;
