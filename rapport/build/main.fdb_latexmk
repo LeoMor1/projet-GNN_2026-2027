@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex build/main"] 1791720549.27145 "build/main.aux" "build/main.bbl" "build/main" 1791720549.82295 0
+["bibtex build/main"] 1791720674.51421 "build/main.aux" "build/main.bbl" "build/main" 1791720675.03188 0
   "./bib/bibM2.bib" 1791720451.63653 3684 f9fbb22373e4d4be56ecbc6e17948d69 ""
   "./cls/splncs03.bst" 1791719746.40284 31579 7e4aae135b616a24984ab85e5cbb8ac7 ""
-  "build/main.aux" 1791720549.65417 6568 a0ecf267a6bde2c0177b0da580a2d0ca "pdflatex"
+  "build/main.aux" 1791720674.8985 6568 a0ecf267a6bde2c0177b0da580a2d0ca "pdflatex"
   (generated)
   "build/main.bbl"
   "build/main.blg"
   (rewritten before read)
-["pdflatex"] 1791720549.32737 "/home/leolienne/Projects/univ/IA-BIML_Bio-Inspired_Machine_Learning/projet-GNN_2026-2027/rapport/main.tex" "build/main.pdf" "main" 1791720549.82312 0
+["pdflatex"] 1791720674.57361 "/home/leolienne/Projects/univ/IA-BIML_Bio-Inspired_Machine_Learning/projet-GNN_2026-2027/rapport/main.tex" "build/main.pdf" "main" 1791720675.032 0
   "/home/leolienne/Projects/univ/IA-BIML_Bio-Inspired_Machine_Learning/projet-GNN_2026-2027/rapport/main.tex" 1791720418.68588 2705 139ffaa4d39fa2492cc4152b0c47becf ""
   "/usr/share/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc" 1775415801 2971 def0b6c1f0b107b3b936def894055589 ""
   "/usr/share/texmf-dist/fonts/map/fontname/texfonts.map" 1775415801 3524 cb3e574dea2d1052e39280babc910dc8 ""
@@ -133,9 +133,9 @@
   "/usr/share/texmf-dist/web2c/texmf.cnf" 1775415801 43569 fd570f2fa160877d211e859f687312ba ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1790172794 5422530 41b0f07ca2d9ceb27bf950b39115ea48 ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1790172787 2364341 b64ce393ea29bb1edd9bc0deeac2722d ""
-  "build/main.aux" 1791720549.65417 6568 a0ecf267a6bde2c0177b0da580a2d0ca "pdflatex"
-  "build/main.bbl" 1791720549.31918 1793 0ec29987355eda24a58554521b16e7b8 "bibtex build/main"
-  "build/main.out" 1791720549.65517 381 3b1a83463f8014ce232c30f2c4089df9 "pdflatex"
+  "build/main.aux" 1791720674.8985 6568 a0ecf267a6bde2c0177b0da580a2d0ca "pdflatex"
+  "build/main.bbl" 1791720674.5665 1793 0ec29987355eda24a58554521b16e7b8 "bibtex build/main"
+  "build/main.out" 1791720674.8995 381 3b1a83463f8014ce232c30f2c4089df9 "pdflatex"
   "cls/llncs.cls" 1791719746.40249 41688 65f2552e476e2e54b95289f3e5fe5bf6 ""
   "main.tex" 1791720418.68588 2705 139ffaa4d39fa2492cc4152b0c47becf ""
   "sections/conclusion.tex" 1791720465.78463 1370 eef4db6c8981d7349bb5ba024f750870 ""
@@ -143,7 +143,7 @@
   "sections/intro.tex" 1791720527.50129 577 590b83fdd6cdbcef8c8153de240ed765 ""
   "sections/liens.tex" 1791720536.29325 3862 03e2e81a0018303185d9354b6b90563a ""
   "sections/noeuds_gat.tex" 1791720542.08221 3864 a724a072e0f6f053bab733e374178a8f ""
-  "sections/noeuds_gcn.tex" 1791720548.62776 8418 0ac9d4a1527c734d78608acdde8be7df ""
+  "sections/noeuds_gcn.tex" 1791720642.76965 8418 0ac9d4a1527c734d78608acdde8be7df ""
   (generated)
   "build/main.aux"
   "build/main.log"
