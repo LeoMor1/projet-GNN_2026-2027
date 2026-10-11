@@ -106,7 +106,3 @@ Paramètres GAT : 2 couches GATConv (3 → 64 × 4 têtes → 64) avec ELU, drop
 - `run_baselines.py` tire les liens injectés avec NumPy, `run_comparison.py` avec PyTorch : même loi, pas les mêmes liens.
 - `src/metrics.py` calcule AUC et AP sans sklearn (celui-ci pose problème sur certains postes Windows) et traite les égalités de scores par blocs.
 - Les paramètres du GAT sont en haut de `src/gat.py` et pas dans `src/config.py`, pour ne pas toucher au fichier de config des autres parties.
-
-
-
-
