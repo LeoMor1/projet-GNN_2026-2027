@@ -1,9 +1,31 @@
-\section{Anomalies de nœuds : GCN (étudiant 2)}
+\section{Anomalies de nœuds : GCN}
 \label{sec:gcn}
 
-% Étudiant 2 : remplacer le cadre ci-dessous par votre texte.
-% Contenu attendu : protocole (anomalies de nœuds, split, score, métriques, graines),
-% architecture GCN, tableau de résultats, ablation, interprétation.
-% Penser à citer les références dans bibM2.bib.
+\subsection{Protocole et modèle}
 
-\espace{Étudiant 2 : GCN\\ protocole, méthode, tableau de résultats (AUC/AP ou RMSE), ablation}{5.6cm}
+Sans étiquette << nœud faux >>, nous entraînons DOMINANT~\cite{ding2019dominant}
+sur le graphe complet : un nœud est d'autant plus suspect qu'il est mal
+reconstruit. Les entrées sont $F=7$ attributs standardisés : position sur la
+sphère unité $(x,y,z)$, $\log(1+\text{pop})$ avec indicateur de population
+manquante (défaut $10\,000$), et $\log(1+d)$ pour les distances moyenne et
+minimale aux voisins. L'encodeur a trois couches GCN ($7\to64\to32\to16$), le
+décodeur d'attributs deux couches ($16\to32\to7$), le décodeur structurel une
+couche puis $\sigma(\tilde Z\tilde Z^\top)$. Le score d'un nœud somme ses deux
+erreurs de reconstruction, recentré médiane/MAD. Adam ($0{,}005$, 500 époques),
+5 entraînements dont les scores sont moyennés.
+
+\subsection{Résultats}
+
+L'erreur d'attributs passe de $0{,}9997$ à $0{,}38$ et celle de structure de $1{,}10$ à $0{,}80$, avec une convergence stable des cinq entraînements ($<0{,}01$). Neuf des dix nœuds les plus mal reconstruits sont mal géolocalisés (Hasvik placé en Nouvelle-Zélande, St Thomas en Australie, Wewak au Canada), avec des erreurs positionnelles élevées ($r_{if}=27$ à $55$). Frankfurt fait exception : sa position est correcte, mais sa population par défaut ($10,000$) est sous-estimée. Les liens restent plausibles ($p\geq0{,}71$) et les liens absents les plus probables ($p>0{,}99$) pointent vers les hubs de la région réelle, montrant que l'embedding retrouve la région malgré des coordonnées erronées. Enfin, Ottawa relie cette analyse à la section~\ref{sec:liens} : le VGAE classe haut le lien Ottawa--Iqaluit, alors que l'anomalie vient des attributs du nœud.
+
+
+\subsection{Évaluation et ablation}
+
+Par injection de $r\in\{1,5,10,20\}\,\%$ de nœuds corrompus, le modèle atteint
+une AUC de $0{,}95$ ($r=1\,\%$) à $0{,}87$ ($r=20\,\%$) et une AP de $0{,}20$
+à $0{,}61$ (moyenne sur 5 entraînements). La performance décroît avec $r$ car
+les nœuds corrompus participent à l'entraînement, l'erreur d'attributs passant
+de $0{,}39$ à $0{,}50$ entre $r=0$ et $20\,\%$. Sans prétraitement
+(lat/lon/pop brutes), la méthode tombe au niveau du hasard (AUC $\approx0{,}49$,
+AP $\approx r$), la perte étant dominée par la population brute : la détection
+repose sur la conception des attributs, pas sur l'architecture seule.

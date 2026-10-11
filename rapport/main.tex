@@ -14,7 +14,7 @@
 % aux autres parties (ils donnent aussi la place disponible).
 % Mettre \draftfalse pour le rendu : les cadres disparaissent.
 \newif\ifdraft
-\drafttrue
+\draftfalse
 % \espace{texte}{hauteur} : cadre à supprimer quand la partie est écrite
 \newcommand{\espace}[2]{\ifdraft\par\smallskip\noindent
   \fbox{\parbox[c][#2][c]{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{\centering\small\textit{#1}}}%
@@ -24,11 +24,13 @@
 \title{Détection d'anomalies dans un réseau d'aéroports avec des GNN}
 
 % TODO : ajouter le troisième membre du groupe
-\author{Nour \textsc{Ben Mansour} \and Léo \textsc{Morin}}
+\author{Nour \textsc{Ben Mansour}, Mohamed ali \textsc{Damergi} \and Léo \textsc{Morin}}
 
 \institute{Université Claude Bernard Lyon 1, France}
 
 \pagestyle{headings}
+\raggedbottom
+\setlength{\textfloatsep}{8pt plus 2pt minus 2pt}\setlength{\intextsep}{6pt plus 2pt minus 2pt}\setlength{\floatsep}{6pt plus 2pt minus 2pt}
 
 \begin{document}
 
@@ -37,11 +39,7 @@
 \selectlanguage{english}
 \begin{abstract}
 % TODO : abstract commun, à réécrire quand les trois parties sont terminées.
-We look for erroneous links in an airport network (3363 nodes, 13547 edges) with graph autoencoders.
-Since the data has no link labels, we inject random false edges at rates between 1\% and 20\% and rank every edge by $1-p_{ij}$, where $p_{ij}$ is the decoder's reconstruction probability.
-A GAE and a VGAE reach an AUC of 0.92--0.94, with no clear difference between them.
-Adamic--Adar, which needs no training, has a higher AUC at every rate; the autoencoders only keep an edge in average precision when anomalies are rare.
-On the original graph, the top-ranked edges are mostly long but plausible routes, and one of them points to a node with wrong coordinates.
+We study link and node anomaly detection in a network of 3,363 airports and 13,547 edges. Using synthetic corruptions, we compare graph neural networks with simple baselines. Adamic–Adar achieves the best link AUC, while GAE/VGAE improve average precision for rare anomalies. DOMINANT mainly detects geographic errors, whereas GAT identifies corrupted population values. These results highlight the importance of feature preprocessing and the limitations of synthetic evaluation.
 Code: \url{https://github.com/LeoMor1/projet-GNN_2026-2027}.
 \begin{keywords}
 Graph neural networks, graph autoencoder, link anomaly detection
@@ -53,12 +51,17 @@ Graph neural networks, graph autoencoder, link anomaly detection
 % Chaque partie est dans son fichier : sections/*.tex
 \input{sections/intro}          % commun
 \input{sections/etat_art}       % commun (une sous-section par étudiant)
-\input{sections/liens}          % étudiant 1 : GAE / VGAE
-\input{sections/noeuds_gcn}     % étudiant 2
-\input{sections/noeuds_gat}     % étudiant 3
+\input{sections/liens}          
+\input{sections/noeuds_gcn}     
+{\let\clearpage\relax % le \clearpage de la section GAT est neutralisé ici (fichier de l'étudiant 3 inchangé)
+\input{sections/noeuds_gat}}     
 \input{sections/conclusion}     % commun
 
+{\scriptsize
+\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}
 \bibliographystyle{cls/splncs03}
 \bibliography{bib/bibM2}
+}
 
 \end{document}
+non 

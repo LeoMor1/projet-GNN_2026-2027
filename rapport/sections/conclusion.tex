@@ -1,6 +1,23 @@
 \section{Comparaison et conclusion}
 \label{sec:concl}
 
-% Partie commune : tableau comparant les modèles retenus, limites, perspectives.
+\begin{table}[!ht]
+\centering
+\footnotesize
+\caption{Les trois approches (injection de $r=1$ à $20\,\%$ d'anomalies ; AUC et AP du $r=1\,\%$ au $r=20\,\%$).}
+\label{tab:comp}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}llccc@{}}
+\toprule
+Modèle & Anomalie ciblée & Score & AUC & AP \\
+\midrule
+GAE & liens ajoutés & $1-p_{ij}$ & $0{,}945\to0{,}917$ & $0{,}19\to0{,}65$ \\
+GCN (DOMINANT) & attributs, position & reconstruction & $0{,}95\to0{,}87$ & $0{,}20\to0{,}61$ \\
+GAT & population & $|\hat y_i-y_i|$ & $0{,}911\to0{,}899$ & $0{,}52\to0{,}79$ \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-\espace{Tous : comparaison finale des modèles (GAE, GCN, GAT), limites, conclusion}{1.8cm}
+Les anomalies visées diffèrent, donc les AUC ne sont pas directement comparables, mais deux constats se recoupent. La qualité des entrées décide de tout : sans standardisation ou prétraitement, le GAE et DOMINANT tombent au niveau du hasard (AUC $0{,}5$ et $0{,}49$). Et sur le graphe réel, les modèles retrouvent de vraies erreurs : Ottawa placé en Australie, Francfort à 10\,000 habitants (valeur par défaut de 1673 nœuds), Hamilton (Nouvelle-Zélande) avec la population de Hamilton aux Bermudes.
+
+Limites : anomalies injectées aléatoires donc faciles (Adamic--Adar bat les autoencodeurs en AUC), tops issus d'une seule graine. À faire : vérifier les tops sur OpenFlights, combiner les trois scores.

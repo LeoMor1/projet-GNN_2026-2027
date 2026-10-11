@@ -1,20 +1,19 @@
-\section{Anomalies de liens (étudiant 1)}
+\section{Anomalies de liens : GAE / VGAE}
 \label{sec:liens}
 
-\subsection{Protocole et modèles}
+\subsection{Protocole et modèle}
 
-Faute d'étiquette « lien faux », nous ajoutons au graphe $r\,|E|$ liens entre des paires non reliées tirées uniformément, $r\in\{1,5,10,20\}\,\%$, \emph{avant} le découpage des liens (\texttt{RandomLinkSplit}, 10\,\% validation, 20\,\% test). Les modèles sont entraînés par reconstruction, sans étiquette : les liens injectés sont dans le graphe d'entraînement. L'encodeur ne voit que les liens d'entraînement (70\,\%, injectés compris), et chaque lien du graphe contaminé reçoit le score $s_{ij}=1-\sigma(z_i^\top z_j)$ (moyenne $\mu$ pour le VGAE). Pour les baselines, le score est l'opposé de l'indice (Jaccard, Adamic--Adar) ou la distance en km.
-
-Les entrées sont lat, lon et population, standardisées. Le GAE a deux couches GCN ($3\to64\to32$) séparées par une ReLU, et la perte est l'entropie croisée sur les liens d'entraînement et des paires négatives tirées au hasard. Le VGAE a une première couche GCN identique, puis deux couches GCN en parallèle pour $\mu$ et $\log\sigma$ ; sa perte vaut $\mathcal{L}_{\mathrm{rec}}+\frac{1}{N}\mathrm{KL}$ ($N$ nœuds). Adam (taux $0{,}01$, 200 époques) sous PyTorch Geometric~\cite{fey2019pyg}, graines $42, 123, 456, 789, 2026$. Nous reportons l'AUC et la précision moyenne (AP) ; la précision@10 est trop instable (écart-type jusqu'à $0{,}25$).
+Sans étiquettes de liens erronés, nous injectons $r|E|$ arêtes entre des paires non reliées, pour $r\in\{1,5,10,20\}\,\%$, avant le découpage entraînement/validation/test (70/10/20\,\%). Les modèles sont entraînés à reconstruire la structure ; les liens injectés peuvent donc aussi apparaître à l'entraînement. Les attributs d'entrée sont la latitude, la longitude et la population, standardisées. Le GAE utilise deux couches GCN ($3\to64\to32$) ; le VGAE partage la première couche puis estime la moyenne et la variance latentes, avec une pénalité KL. Les deux sont entraînés par Adam (taux $0{,}01$, 200 époques) avec cinq graines. Le score d'anomalie est $1-p_{ij}$, où $p_{ij}$ est la probabilité reconstruite. Nous rapportons l'AUC et la précision moyenne (AP).
 
 \subsection{Résultats}
 
-\begin{table}[t]
+\begin{table}[!ht]
 \centering
 \footnotesize
-\caption{Liens injectés : moyenne sur 5 graines, l'écart-type est entre parenthèses (dernier chiffre : $0{,}952(4)=0{,}952\pm0{,}004$). Meilleure valeur en gras. Une AP aléatoire vaut $r/(1+r)$, soit $0{,}010$, $0{,}048$, $0{,}091$ et $0{,}167$.}
+\caption{Liens injectés : moyenne sur 5 graines, écart-type entre parenthèses ($0{,}952(4)=0{,}952\pm0{,}004$). Gras : meilleur. AP aléatoire : $0{,}010$ à $0{,}167$ ($r/(1+r)$).}
 \label{tab:links}
-\setlength{\tabcolsep}{3.5pt}
+\setlength{\tabcolsep}{3pt}
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{@{}lcccccccc@{}}
 \toprule
 & \multicolumn{2}{c}{$r=1\,\%$} & \multicolumn{2}{c}{$r=5\,\%$} & \multicolumn{2}{c}{$r=10\,\%$} & \multicolumn{2}{c}{$r=20\,\%$} \\
@@ -28,38 +27,34 @@ Adamic--Adar & $\mathbf{0{,}952}(4)$ & $0{,}098(3)$ & $\mathbf{0{,}951}(2)$ & $0
 GAE & $0{,}945(7)$ & $0{,}190(25)$ & $0{,}936(4)$ & $0{,}429(19)$ & $0{,}929(4)$ & $\mathbf{0{,}552}(8)$ & $0{,}917(3)$ & $0{,}650(7)$ \\
 VGAE & $0{,}943(9)$ & $\mathbf{0{,}193}(14)$ & $0{,}933(3)$ & $\mathbf{0{,}434}(15)$ & $0{,}927(4)$ & $0{,}551(10)$ & $0{,}916(2)$ & $0{,}654(5)$ \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table}
 
-Adamic--Adar a le meilleur AUC à tous les taux ($0{,}95$ contre $0{,}917$ à $0{,}945$), sans apprentissage ni attribut (tableau~\ref{tab:links}). Les autoencodeurs gardent l'avantage en AP quand les anomalies sont rares ($0{,}19$ contre $0{,}10$ à $r=1\,\%$), puis il s'inverse à $r=20\,\%$ ($0{,}68$ contre $0{,}65$). La distance seule donne déjà $0{,}915$ : des paires tirées au hasard sont presque toujours éloignées.
+Adamic--Adar a le meilleur AUC à tous les taux ($0{,}95$ contre $0{,}917$ à $0{,}945$) sans apprentissage (tableau~\ref{tab:links}). Les autoencodeurs ne gardent l'avantage en AP que si les anomalies sont rares. GAE et VGAE diffèrent de moins de $0{,}005$, comme l'écart-type : le VGAE n'apporte rien de démontré.
 
-GAE et VGAE sont à moins de $0{,}005$ l'un de l'autre, comme l'écart-type ; au test de Student apparié, $p>0{,}2$ dans cinq cas sur huit et $p\approx0{,}03$--$0{,}05$ dans les trois autres. Rien ne montre que le VGAE améliore le GAE, nous gardons le plus simple.
-
-Sur le graphe d'origine (graine 42), quatre des dix liens les mieux classés sont communs aux deux modèles ; la plupart relient un grand aéroport à une destination éloignée (Paris--Cayenne, Londres--La Barbade) (atypiques, mais probablement réels).
+Sur le graphe d'origine (graine 42), les dix premiers liens relient surtout un grand aéroport à une destination éloignée (Paris--Cayenne), probablement réels.
 % TODO : vérifier ces liaisons sur une source externe (OpenFlights, Wikipédia) et ajuster la phrase.
-Un cas est une vraie erreur : le VGAE classe cinquième Ottawa--Iqaluit, or le nœud « Ottawa » a pour coordonnées $(-27{,}9;\,144{,}6)$ et pour pays l'Australie, alors que ses 26 voisins sont presque tous canadiens ou américains. Le lien est correct, ce sont les attributs du nœud qui sont faux.
+Une vraie erreur : le VGAE classe cinquième Ottawa--Iqaluit, or le nœud « Ottawa » est placé en $(-27{,}9;\,144{,}6)$, en Australie, alors que ses voisins sont nord-américains : le lien est correct, les attributs du nœud sont faux.
 
-\subsection{Ablation du GAE}
+\subsection{Évaluation et ablation}
 
-\begin{table}[t]
+\begin{table}[!ht]
 \centering
 \footnotesize
-\caption{Ablation du GAE ($r=10\,\%$, 5 graines, écart-type entre parenthèses). Référence : 2 couches, attributs standardisés, $\dim Z=32$.}
+\caption{Ablation du GAE ($r=10\,\%$, 5 graines).}
 \label{tab:ablation}
-\begin{tabular}{@{}lcc@{}}
+\setlength{\tabcolsep}{3pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}lccccc@{}}
 \toprule
-Variante & AUC & AP \\
+ & Complet & 1 couche GCN & Sans standardisation & Sans attributs & $\dim Z=8$ \\
 \midrule
-GAE complet & $0{,}929(4)$ & $0{,}552(8)$ \\
-\midrule
-1 couche GCN & $0{,}846(10)$ & $0{,}365(14)$ \\
-Sans standardisation & $0{,}500(0)$ & $0{,}091(0)$ \\
-Sans attributs ($X=\mathbf 1$) & $0{,}812(3)$ & $0{,}202(4)$ \\
-$\dim Z=8$ (au lieu de 32) & $0{,}930(3)$ & $0{,}558(16)$ \\
+AUC & $0{,}929(4)$ & $0{,}846(10)$ & $0{,}500(0)$ & $0{,}812(3)$ & $0{,}930(3)$ \\
+AP & $0{,}552(8)$ & $0{,}365(14)$ & $0{,}091(0)$ & $0{,}202(4)$ & $0{,}558(16)$ \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table}
 
-Avec une seule couche GCN, l'AUC passe de $0{,}93$ à $0{,}85$ (tableau~\ref{tab:ablation}). Sans standardisation il vaut exactement $0{,}5$ et l'AP est celle du hasard ($0{,}091$) : la population, de l'ordre de $10^7$, fait probablement saturer le sigmoïde et tous les scores sont égaux. Sans attributs, l'AUC reste à $0{,}81$ mais l'AP tombe à $0{,}20$. Une dimension latente de 8 donne le même résultat que 32, qui n'est donc pas nécessaire.
-
-Limites : les liens injectés sont tirés au hasard et donc faciles à reconnaître ; un AUC de $0{,}93$ ici ne dit pas que les vraies erreurs seront trouvées. Le top-10 vient d'une seule graine.
+Une couche ou l'absence d'attributs dégradent le GAE (tableau~\ref{tab:ablation}) ; sans standardisation, la population ($\sim10^7$) sature probablement le sigmoïde.
