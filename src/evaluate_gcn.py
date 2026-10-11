@@ -10,7 +10,7 @@ import torch
 from sklearn.metrics import average_precision_score, roc_auc_score
 from torch_geometric.utils import from_networkx
 
-from dominant import run
+from src.gcn import run
 
 DATA_PATH = Path(__file__).parent / "data" / "airportsAndCoordAndPop.graphml"
 RATES = [0.01, 0.05, 0.10, 0.20]       # part de nœuds déplacés
