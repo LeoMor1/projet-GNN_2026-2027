@@ -1,29 +1,16 @@
-# Projet GNN 2026-2027 : anomalies de liens dans un réseau d'aéroports
+# Projet GNN 2026-2027 : Détection d’anomalies liens/noeuds dans un réseau d’aéroports avec des GNN
 
-Les autoencodeurs de graphe (GAE, VGAE) repèrent-ils les liens aberrants d'un réseau d'aéroports, mieux qu'une heuristique sans apprentissage ? Ce dépôt contient le volet « liens » du projet de groupe. Le rapport est dans `rapport/`.
+Les autoencodeurs de graphe (GAE, VGAE) repèrent-ils les liens aberrants d'un réseau d'aéroports, mieux qu'une heuristique sans apprentissage ? Ce dépôt contient le volet « liens » du projet de groupe, et la partie GAT sur les nœuds. Le rapport est dans `rapport/`.
 
 ## Données
 
-Fichier : `data/airportsAndCoordAndPop.graphml`
-
-| Attribut nœud | Rôle |
-|---------------|------|
-| `lat`, `lon`, `population` | Features d’entrée (`data.x`) |
-| `country` | Label à prédire (`data.y`) |
-| `city_name` | Informatif (non utilisé pour l’entraînement) |
-
-Les arêtes représentent les liaisons aériennes entre aéroports.
+`data/airportsAndCoordAndPop.graphml` : 3363 aéroports, 13547 liens non orientés. Attributs d'un nœud : `lat`, `lon`, `population` (entrées des modèles, standardisées), `city_name`, `country` (lecture des résultats uniquement). Le fichier n'est jamais modifié.
 
 Pour le GAT c'est un peu différent : la population n'est pas une entrée, c'est ce qu'on cherche à prédire (à partir de `lat`, `lon` et du degré). Detail important a preciser, la moitier des valeurs sont mises a 10 000 probablement une valeurs par defaut et a prendre donc avec des pincettes.
 
 ## Installation
 
-- Python ≥ 3.12
-- [conda](https://docs.conda.io/) (recommandé sous Windows) **ou** pip / [uv](https://docs.astral.sh/uv/)
-
-## Installation (reproductibilité)
-
-### Avec conda (recommandé)
+Python 3.12 ou plus.
 
 ```bash
 conda create -n gnn312 python=3.12 -y
@@ -43,15 +30,21 @@ Versions utilisées : `torch` 2.14.1, `torch-geometric` 2.8.0.
 | `python experiments/run_baselines.py` | Distance, Jaccard, Adamic-Adar (sans PyTorch) | `baselines_liens.csv` |
 | `python experiments/run_ablation.py` | Ablation du GAE à 10 % d'anomalies | `ablation_gae.csv` |
 | `python experiments/run_top10_suspicious.py` | 10 liens les plus suspects du graphe d'origine | `gae_top10_suspicious_edges.csv`, `vgae_top10_suspicious_edges.csv` |
+| `python experiments/run_gat.py` | GAT qui prédit la population, 5 graines + les 20 nœuds les plus suspects | `gat_regression.csv`, `gat_top20_suspicious_nodes.csv` |
 
 Protocole : on ajoute `r × |E|` liens entre des paires non reliées tirées au hasard, avant `RandomLinkSplit` (10 % validation, 20 % test). Les modèles sont entraînés par reconstruction, sans étiquette. Chaque lien du graphe contaminé reçoit le score `1 - σ(z_i · z_j)` ; on mesure AUC et AP contre les liens injectés.
 
 Paramètres : couches 3 → 64 → 32, Adam, taux d'apprentissage 0,01, 200 époques, graines 42, 123, 456, 789, 2026.
 
+Protocole GAT : on coupe les nœuds au hasard (80 % train, 20 % test) et le GAT apprend à prédire `log(1 + population)` à partir de `lat`, `lon` et `log(1 + degré)` (standardisés). La perte (MSE) est calculée seulement sur les nœuds train. Pour chaque nœud, le score d'anomalie est l'écart entre la population prédite et la population observée, en log. On regarde MAE, RMSE et R² (en log).
+
+Paramètres GAT : 2 couches GATConv (3 → 64 × 4 têtes → 64) avec ELU, dropout 0,2, Adam avec un taux de 0,005 et un weight decay de 5e-4, 200 époques, mêmes graines que plus haut.
+
 ## Remarques
 
 - `run_baselines.py` tire les liens injectés avec NumPy, `run_comparison.py` avec PyTorch : même loi, pas les mêmes liens.
 - `src/metrics.py` calcule AUC et AP sans sklearn (celui-ci pose problème sur certains postes Windows) et traite les égalités de scores par blocs.
+- Les paramètres du GAT sont en haut de `src/gat.py` et pas dans `src/config.py`, pour ne pas toucher au fichier de config des autres parties.
 
 ## Structure
 
@@ -66,49 +59,6 @@ rapport/      main.tex + sections/ (un fichier par partie), bibM2.bib, template 
 ## Rapport
 
 ```bash
-conda activate gnn312
-python main.py
+cd rapport
+pdflatex main && bibtex main && pdflatex main && pdflatex main
 ```
-
-| Commande | Contenu | Sortie (`results/csv/`) |
-|---|---|---|
-| `python experiments/run_comparison.py` | GAE contre VGAE, 4 taux × 5 graines | `gae_vs_vgae.csv`, `gae_vs_vgae_summary.csv`, figures dans `results/figures/` |
-| `python experiments/run_baselines.py` | Distance, Jaccard, Adamic-Adar (sans PyTorch) | `baselines_liens.csv` |
-| `python experiments/run_ablation.py` | Ablation du GAE à 10 % d'anomalies | `ablation_gae.csv` |
-| `python experiments/run_top10_suspicious.py` | 10 liens les plus suspects du graphe d'origine | `gae_top10_suspicious_edges.csv`, `vgae_top10_suspicious_edges.csv` |
-| `python experiments/run_gat.py` | GAT qui prédit la population, 5 graines + les 20 nœuds les plus suspects | `gat_regression.csv`, `gat_top20_suspicious_nodes.csv` |
-
-Le script (partie **avant** le GCN) :
-
-1. charge le graphe GraphML avec NetworkX ;
-2. le convertit en objet PyTorch Geometric (`from_networkx`) ;
-3. encode les pays avec `LabelEncoder` ;
-4. crée des masques train (80 %) / test (20 %).
-
-Il affiche la taille du graphe, la forme de `data.x` / `data.edge_index`, le nombre de pays, et les tailles train/test.
-
-## Structure du dépôt
-
-```
-projet-GNN_2026-2027/
-├── data/
-│   └── airportsAndCoordAndPop.graphml
-├── main.py                  # chargement + préparation des données
-├── pyproject.toml
-├── README.md
-└── rapport/                 # rapport LaTeX
-```
-
-Protocole GAT : on coupe les nœuds au hasard (80 % train, 20 % test) et le GAT apprend à prédire `log(1 + population)` à partir de `lat`, `lon` et `log(1 + degré)` (standardisés). La perte (MSE) est calculée seulement sur les nœuds train. Pour chaque nœud, le score d'anomalie est l'écart entre la population prédite et la population observée, en log. On regarde MAE, RMSE et R² (en log).
-
-Paramètres GAT : 2 couches GATConv (3 → 64 × 4 têtes → 64) avec ELU, dropout 0,2, Adam avec un taux de 0,005 et un weight decay de 5e-4, 200 époques, mêmes graines que plus haut.
-
-## Remarques
-
-- `run_baselines.py` tire les liens injectés avec NumPy, `run_comparison.py` avec PyTorch : même loi, pas les mêmes liens.
-- `src/metrics.py` calcule AUC et AP sans sklearn (celui-ci pose problème sur certains postes Windows) et traite les égalités de scores par blocs.
-- Les paramètres du GAT sont en haut de `src/gat.py` et pas dans `src/config.py`, pour ne pas toucher au fichier de config des autres parties.
-
-
-
-
