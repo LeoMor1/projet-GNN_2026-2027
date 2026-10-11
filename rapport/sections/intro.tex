@@ -1,8 +1,4 @@
 \section{Introduction}
 \label{sec:intro}
 
-Le graphe étudié relie 3363 aéroports par 13547 liaisons non orientées. Chaque nœud a une latitude, une longitude, la population de sa ville, un nom de ville et un pays. Une partie de ces informations est fausse, et certains liens aussi. L'idée est de comparer ce qu'un modèle prédit avec ce qui est observé et de regarder où les deux divergent le plus. Le travail est réparti en trois volets sur le même graphe : les liens (GAE, VGAE), puis les nœuds (GCN, GAT).
-
-Pour les liens, la question est la suivante : un autoencodeur de graphe repère-t-il les liens aberrants mieux qu'une heuristique sans apprentissage, et le VGAE apporte-t-il quelque chose par rapport au GAE ? Le code est disponible à l'adresse \url{https://github.com/LeoMor1/projet-GNN_2026-2027}.
-
-\espace{Étudiants 2 et 3 : question posée sur les nœuds (pays, population), données utilisées (3--4 lignes)}{1.5cm}
+Le graphe étudié relie 3363 aéroports par 13547 liaisons non orientées ; chaque nœud a une latitude, une longitude, la population de sa ville, un nom de ville et un pays. Une partie de ces informations est fausse, et certains liens aussi. Nous comparons ce qu'un modèle prédit à ce qui est observé et regardons où les deux divergent le plus, selon trois volets : les liens (GAE, VGAE), puis les nœuds (GCN, GAT) pour les pays, positions et populations erronés. Code : \url{https://github.com/LeoMor1/projet-GNN_2026-2027}.

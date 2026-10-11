@@ -1,8 +1,48 @@
-\section{Anomalies de nœuds : GAT (étudiant 3)}
+\clearpage
+\section{Anomalies de nœuds : GAT}
 \label{sec:gat}
 
-% Étudiant 3 : remplacer le cadre ci-dessous par votre texte.
-% Contenu attendu : architecture GAT (têtes d'attention), tableau de résultats,
-% ablation, interprétation.
+\subsection{Protocole et modèle}
 
-\espace{Étudiant 3 : GAT\\ méthode, tableau de résultats (AUC/AP ou RMSE), ablation}{5.6cm}
+Comme GraphRfi~\cite{zhang2020graphrfi}, nous prédisons la population d'un aéroport à partir de sa position et de ses liaisons : un nœud est suspect si sa population observée s'écarte de la prédiction. La cible est $y_i=\log(1+\mathrm{pop}_i)$, standardisée et exclue des entrées, qui comprennent lat, lon et $\log(1+\deg)$, également standardisées. Une couche GAT~\cite{velickovic2018gat} agrège les voisins selon des coefficients d'attention appris, avec $K$ têtes concaténées :
+
+$$
+\alpha_{ij}=\operatorname{softmax}_{j}\big(\mathrm{LeakyReLU}(a^\top[Wh_i\,\|\,Wh_j])\big),\qquad
+h_i'=\big\Vert_{k=1}^{K}\textstyle\sum_{j}\alpha^{k}_{ij}W^{k}h_j.
+$$
+
+Comme $\sum_j\alpha_{ij}=1$, le degré est ajouté en entrée pour conserver l'information sur le nombre de voisins. Le modèle comporte deux couches ($3\to64$, $K=4$, puis $256\to64$, $K=1$), des activations ELU, un dropout de $0{,}2$ et une couche linéaire. Il est entraîné par MSE sur 80,% des nœuds, avec Adam ($0{,}005$, 200 époques) et les graines de la section~\ref{sec:liens}. Le score d'anomalie est $s_i=|\hat y_i-y_i|$.
+
+Pour l'évaluation, nous multiplions ou divisons la population de $rN$ nœuds par un facteur de 10 à 100, en les conservant dans l'entraînement, puis calculons l'AUC et l'AP sur les 20,% de test. Les baselines utilisent la moyenne des nœuds d'entraînement ou celle des voisins à la place de $\hat y_i$.
+
+
+\subsection{Résultats}
+
+\begin{table}[!ht]
+\centering
+\footnotesize
+\caption{Populations injectées, nœuds test, moyenne sur 5 graines (écart-type sur le dernier chiffre entre parenthèses). Une AP aléatoire vaut environ $r$.}
+\label{tab:gatauc}
+\setlength{\tabcolsep}{3.5pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}lcccccccc@{}}
+\toprule
+& \multicolumn{2}{c}{$r=1\,\%$} & \multicolumn{2}{c}{$r=5\,\%$} & \multicolumn{2}{c}{$r=10\,\%$} & \multicolumn{2}{c}{$r=20\,\%$} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}\cmidrule(lr){8-9}
+Méthode & AUC & AP & AUC & AP & AUC & AP & AUC & AP \\
+\midrule
+Moyenne globale & $0{,}881(77)$ & $0{,}297(133)$ & $0{,}828(45)$ & $0{,}373(77)$ & $0{,}807(43)$ & $0{,}499(89)$ & $0{,}823(19)$ & $0{,}665(20)$ \\
+Moyenne des voisins & $0{,}792(77)$ & $0{,}169(48)$ & $0{,}791(61)$ & $0{,}253(100)$ & $0{,}777(34)$ & $0{,}343(64)$ & $0{,}762(14)$ & $0{,}460(45)$ \\
+GAT & $\mathbf{0{,}911}(32)$ & $\mathbf{0{,}524}(115)$ & $\mathbf{0{,}896}(22)$ & $\mathbf{0{,}575}(80)$ & $\mathbf{0{,}900}(26)$ & $\mathbf{0{,}698}(75)$ & $\mathbf{0{,}899}(16)$ & $\mathbf{0{,}790}(17)$ \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+Le GAT bat les deux baselines à tous les taux (tableau~\ref{tab:gatauc}), avec une AUC stable vers $0{,}90$ : ne voyant pas la population en entrée, il ne peut pas apprendre à recopier les valeurs faussées. En prédiction, le GAT atteint $R^2=0{,}37(3)$ sur les nœuds test, et l'ablation le fait baisser à chaque fois : $0{,}29$ sans le degré, $0{,}32$ sans les liens (degré gardé), $0{,}31$ avec une couche et $0{,}34$ avec une tête. Le degré compte le plus, mais les voisins aident aussi.
+
+Sur le graphe d'origine (graine 42), le top 20 mêle des mégapoles sous-estimées (Delhi, Karachi) et des erreurs de données : Francfort (234 liaisons), Calcutta et deux autres villes à exactement 10\,000 habitants, valeur par défaut de 1673 nœuds sur 3363, et Hamilton (Nouvelle-Zélande) avec 902 habitants, probablement ceux de Hamilton aux Bermudes.
+
+% \subsection{Conclusion}
+
+% Le GAT détecte bien les populations faussées (AUC $\approx0{,}90$) et retrouve de vraies erreurs du fichier, mais prédit mal la population elle-même ($R^2=0{,}37$), en partie à cause des 10\,000 par défaut. Il ne voit pas non plus les erreurs de coordonnées que trouve DOMINANT.
