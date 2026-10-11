@@ -5,7 +5,7 @@ from torch_geometric.nn import GCNConv
 from pathlib import Path
 import networkx as nx
 from torch_geometric.utils import from_networkx, to_undirected, scatter
-from sklearn.preprocessing import LabelEncoder
+
 R_EARTH = 6371.0
 
 def build_features(
@@ -238,11 +238,10 @@ def explain(index, attr_feat, probs, A, names, features_names, nb_attr = 1, nb_v
     for proba, node in zip(top.values, top.indices):
         print(f"{names[index]} -- {names[int(node)]:25s} proba={proba:.3f}")
 
-if __name__ == "__main__":
-    DATA_PATH = Path(__file__).parent / "data" / "airportsAndCoordAndPop.graphml"
-    G = nx.read_graphml(DATA_PATH, node_type=int)
-    N_EPOCH = 500
-    N_RUNS = 5
+def main(n_epoch: int = 500, n_runs: int = 5) -> None:
+    """Point d'entree DOMINANT / GCN (lancer depuis la racine : python src/gcn.py)."""
+    data_path = Path(__file__).resolve().parent.parent / "data" / "airportsAndCoordAndPop.graphml"
+    G = nx.read_graphml(data_path, node_type=int)
 
     data = from_networkx(
         G,
@@ -251,10 +250,23 @@ if __name__ == "__main__":
 
     names = [G.nodes[n].get("city_name", str(n)) for n in G.nodes()]
 
-    score, struct_score, attr_score, attr_feat, probs, A = run(data, N_EPOCH, N_RUNS)
-    features_names = ["x", "y", "z", "log_pop", "pop_missing", "dist_moy_voisins", "dist_min_voisins"]
+    score, struct_score, attr_score, attr_feat, probs, A = run(data, n_epoch, n_runs)
+    features_names = [
+        "x",
+        "y",
+        "z",
+        "log_pop",
+        "pop_missing",
+        "dist_moy_voisins",
+        "dist_min_voisins",
+    ]
 
     top = score.topk(10)
-    print("\nTop 10 anomalies (score, aéroport):")
-    for score, idx in zip(top.values, top.indices):
+    print("\nTop 10 anomalies (score, aeroport):")
+    for anom_score, idx in zip(top.values, top.indices):
+        print(f"score={float(anom_score):.4f} | {names[int(idx)]}")
         explain(idx, attr_feat, probs, A, names, features_names, nb_attr=10, nb_voisins=10)
+
+
+if __name__ == "__main__":
+    main()

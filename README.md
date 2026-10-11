@@ -36,6 +36,52 @@ Ces valeurs sont donc à prendre avec des pincettes ; le GCN (partie DOMINANT)
 ajoute explicitement une feature « population manquante » pour l'indiquer au
 modèle, et le GAT s'appuie avant tout sur `lat`, `lon` et le degré.
 
+## Structure du projet
+
+```
+projet-GNN_2026-2027/
+├── main.py                              # lance TOUT (ou une sélection)
+├── data/
+│   └── airportsAndCoordAndPop.graphml   # graphe original (jamais modifié)
+├── src/                                 # bibliothèque réutilisable
+│   ├── config.py                        # hyperparamètres, chemins, seeds
+│   ├── data.py                          # chargement GraphML + RandomLinkSplit
+│   ├── gae.py / vgae.py                 # autoencodeurs (anomalies de liens)
+│   ├── link_anomaly.py                  # scores 1-p_ij + injection de fausses arêtes
+│   ├── evaluation.py / metrics.py       # AUC, AP, Precision@K
+│   ├── io_results.py                    # écriture CSV / figures
+│   ├── utils.py                         # seeds, device
+│   ├── gcn.py                           # DOMINANT (anomalies de nœuds)
+│   ├── evaluate_gcn.py                  # évaluation DOMINANT + anomalies injectées
+│   └── gat.py                           # GAT régression population
+├── experiments/                         # scripts exécutables séparément
+│   ├── run_comparison.py                # GAE vs VGAE (multi-seeds / taux)
+│   ├── run_baselines.py                 # baselines liens sans apprentissage
+│   ├── run_ablation.py                  # ablation GAE
+│   ├── run_top10_suspicious.py          # Top 10 liens suspects
+│   └── run_gat.py                       # GAT + export CSV
+├── results/
+│   ├── csv/                             # tableaux de résultats
+│   └── figures/                         # figures générées
+├── rapport/                             # rapport LaTeX (Overleaf / latexmk)
+│   ├── main.tex
+│   ├── sections/
+│   ├── figures/
+│   ├── bib/
+│   └── cls/
+├── pyproject.toml
+├── uv.lock
+└── README.md
+```
+
+Séparation voulue :
+
+- **`main.py`** = orchestrateur (tout lancer, ou `--only` / `--skip`) ;
+- **`src/`** = code réutilisable (modèles, données, métriques) ;
+- **`experiments/`** = points d’entrée des expériences (toujours lançables seuls) ;
+- **`results/`** = sorties (CSV, figures), séparées du code ;
+- **`data/`** = jeu de données original, non modifié.
+
 ## Installation
 
 - Python ≥ 3.12
@@ -77,11 +123,42 @@ Toutes les commandes se lancent **à la racine du dépôt** :
 
 ```bash
 conda activate gnn312
+cd /chemin/vers/projet-GNN_2026-2027
+```
 
+### Option A — tout lancer via `main.py`
+
+```bash
+# Toutes les expériences (baselines, GAE/VGAE, ablation, top10, GCN, GAT)
+python main.py
+
+# Lister les étapes
+python main.py --list
+
+# Une ou plusieurs étapes seulement
+python main.py --only comparison gat
+python main.py --only gcn evaluate_gcn
+
+# Tout sauf certaines étapes
+python main.py --skip evaluate_gcn
+
+# Continuer même si une étape échoue
+python main.py --continue-on-error
+```
+
+Étapes reconnues par `main.py` : `baselines`, `comparison`, `ablation`, `top10`,
+`gcn`, `evaluate_gcn`, `gat`  
+(alias utiles : `gae`/`vgae` → `comparison`, `dominant` → `gcn`).
+
+### Option B — exécuter chaque modèle / expérience séparément
+
+Les scripts individuels restent disponibles (même comportement qu’avant) :
+
+```bash
 # Partie liens — GAE contre VGAE, 4 taux x 5 graines
 python experiments/run_comparison.py
 
-# Partie liens — baselines sans apprentissage (aucune dépendance PyTorch)
+# Partie liens — baselines sans apprentissage
 python experiments/run_baselines.py
 
 # Partie liens — ablation du GAE à 10 % d'anomalies
@@ -102,8 +179,9 @@ python experiments/run_gat.py
 
 | Script | Contenu | Sorties |
 |---|---|---|
+| `main.py` | Orchestrateur : toutes les étapes ou une sélection | idem aux scripts appelés |
 | `experiments/run_comparison.py` | GAE contre VGAE, taux {1, 5, 10, 20 %} × 5 graines | `results/csv/gae_vs_vgae.csv`, `gae_vs_vgae_summary.csv`, figures dans `results/figures/` |
-| `experiments/run_baselines.py` | Distance, Jaccard, Adamic-Adar (sans PyTorch) | `results/csv/baselines_liens.csv` |
+| `experiments/run_baselines.py` | Distance, Jaccard, Adamic-Adar (sans PyTorch Geometric entraîné) | `results/csv/baselines_liens.csv` |
 | `experiments/run_ablation.py` | Ablation du GAE à 10 % d'anomalies | `results/csv/ablation_gae.csv` |
 | `experiments/run_top10_suspicious.py` | Top 10 liaisons suspectes du graphe d'origine | `results/csv/gae_top10_suspicious_edges.csv`, `vgae_top10_suspicious_edges.csv` |
 | `src/gcn.py` | DOMINANT sur le graphe d'origine, 5 runs moyennés + explication par nœud | console |
@@ -121,13 +199,12 @@ python experiments/run_gat.py
   sklearn.
 - Les identifiants NetworkX ont des trous : `data.nx_node_ids[i]` donne
   l'identifiant d'origine du nœud PyG `i`, utilisé pour les exports CSV.
-- `src/gcn.py` et `src/evaluate_gcn.py` construisent leur chemin de données
-  relatif à `src/` : les lancer depuis la racine du dépôt peut nécessiter
-  d'ajuster `DATA_PATH` (les autres scripts utilisent `src/config.DATA_PATH`).
+- Les chemins de données passent par la **racine du dépôt** (`data/…`), y compris
+  pour `src/gcn.py` et `src/evaluate_gcn.py`.
 - Le rapport LaTeX se compile dans `rapport/` (`latexmk main.tex`), le PDF
   compilé est `rapport/main.pdf`.
 
 ## Utilisation de l'IA générative
 
 L'IA générative a été utilisée pour mieux comprendre les concepts et le code
-présentés dans les articles scientifiques utiliser pour ce projet.
+présentés dans les articles scientifiques utilisés pour ce projet.
