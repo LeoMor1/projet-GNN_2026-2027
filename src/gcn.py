@@ -5,7 +5,7 @@ from torch_geometric.nn import GCNConv
 from pathlib import Path
 import networkx as nx
 from torch_geometric.utils import from_networkx, to_undirected, scatter
-from sklearn.preprocessing import LabelEncoder
+
 R_EARTH = 6371.0
 
 def build_features(

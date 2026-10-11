@@ -15,10 +15,10 @@ if str(ROOT) not in sys.path:
 import networkx as nx
 import numpy as np
 import torch
-from sklearn.metrics import average_precision_score, roc_auc_score
 from torch_geometric.utils import from_networkx
 
 from src.gcn import run
+from src.metrics import average_precision_score, roc_auc_score
 
 DATA_PATH = ROOT / "data" / "airportsAndCoordAndPop.graphml"
 RATES = [0.01, 0.05, 0.10, 0.20]       # part de nœuds déplacés
